@@ -8,7 +8,7 @@ import random
 import os
 from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, ContextTypes, JobQueue
 
 # Fix for Python 3.13 compatibility
 if sys.version_info >= (3, 13):
@@ -406,7 +406,7 @@ def main():
     print(f"👑 Owner ID: {YOUR_USER_ID}")
     print("=" * 50)
     
-    # Create application
+    # Create application with job queue support
     application = Application.builder().token(BOT_TOKEN).build()
 
     # Add command handlers
@@ -418,17 +418,19 @@ def main():
     # Set up auto-posting jobs
     job_queue = application.job_queue
     if job_queue:
+        # Schedule recurring jobs
         job_queue.run_repeating(auto_post_mining, interval=1800, first=10)
         job_queue.run_repeating(auto_post_withdrawal, interval=2700, first=30)
         job_queue.run_repeating(auto_post_contract, interval=3600, first=60)
         job_queue.run_repeating(auto_post_deposit, interval=5400, first=120)
-        print("✅ Auto-posting: Active")
-        print("   ⏱️  Mining: every 30 min")
-        print("   ⏱️  Withdrawal: every 45 min")
-        print("   ⏱️  Contract: every 60 min")
-        print("   ⏱️  Deposit: every 90 min")
+        
+        print("✅ Auto-posting: ACTIVE")
+        print("   ⏱️  Mining: every 30 minutes")
+        print("   ⏱️  Withdrawal: every 45 minutes")
+        print("   ⏱️  Contract: every 60 minutes")
+        print("   ⏱️  Deposit: every 90 minutes")
     else:
-        print("⚠️ Auto-posting: Not available")
+        print("❌ Auto-posting: NOT AVAILABLE - JobQueue missing")
     
     print("⚡️ Bot is running... Press Ctrl+C to stop")
     print("=" * 50)
@@ -443,3 +445,4 @@ if __name__ == '__main__':
         print("\n👋 Bot stopped by user")
     except Exception as e:
         print(f"❌ Error: {e}")
+        logger.error(f"Fatal error: {e}")
